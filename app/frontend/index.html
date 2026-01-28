@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>App Simples</title>
+</head>
+<body>
+<div id="status" style="background: yellow; padding: 5px;">Status: Aguardando...</div>
+<hr>
+
+<h3>Adicionar Tarefa</h3>
+<input type="text" id="tituloInput" placeholder="Titulo">
+<button onclick="criarTarefa()">Salvar</button>
+
+<h3>Lista</h3>
+<ul id="lista"></ul>
+
+<script>
+const API = '/api/tarefas/';
+const statusDiv = document.getElementById('status');
+
+// Função auxiliar para mostrar erros na tela
+function log(msg, erro=false) {
+statusDiv.innerText = msg;
+statusDiv.style.background = erro ? 'red' : 'lightgreen';
+if(erro) statusDiv.style.color = 'white';
+}
+
+async function carregar() {
+log("Carregando dados...");
+try {
+const res = await fetch(API);
+if (!res.ok) throw new Error("Erro na API: " + res.status);
+
+const dados = await res.json();
+const lista = document.getElementById('lista');
+lista.innerHTML = '';
+
+dados.forEach(item => {
+const li = document.createElement('li');
+// html cru
+li.innerHTML = `
+[${item.id}] <b>${item.titulo}</b> - ${item.concluida ? 'FEITO' : 'PENDENTE'}
+<button onclick="deletar(${item.id})">X</button>
+<button onclick="concluir(${item.id}, '${item.titulo}')">V</button>
+`;
+lista.appendChild(li);
+});
+log("Dados carregados com sucesso.");
+} catch (err) {
+console.error(err);
+log("TRAVOU: " + err.message, true);
+}
+}
+
+async function criarTarefa() {
+const titulo = document.getElementById('tituloInput').value;
+await fetch(API, {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({ titulo: titulo })
+});
+document.getElementById('tituloInput').value = '';
+carregar();
+}
+
+async function deletar(id) {
+await fetch(API + id, { method: 'DELETE' });
+carregar();
+}
+
+async function concluir(id, titulo) {
+await fetch(API + id, {
+method: 'PUT',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({ titulo: titulo, concluida: true })
+});
+carregar();
+}
+
+// inicia ao abrir
+carregar();
+</script>
+</body>
+</html>
