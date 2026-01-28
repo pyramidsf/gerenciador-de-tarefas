@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 import os
 
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set")
@@ -12,14 +13,14 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# modelo db 
+# modelo db
 class Tarefa(Base):
     __tablename__ = "tarefas"
     id = Column(Integer, primary_key=True, index=True)
     titulo = Column(String, index=True)
     concluida = Column(Boolean, default=False)
 
-# cria tabelas 
+# tabelas
 Base.metadata.create_all(bind=engine)
 
 # modelo do pydantic 
@@ -34,6 +35,7 @@ class TarefaResponse(TarefaCreate):
         orm_mode = True 
         from_attributes = True
 
+# dependencia da db 
 def get_db():
     db = SessionLocal()
     try:
@@ -49,7 +51,7 @@ def listar(db: Session = Depends(get_db)):
 
 @app.post("/tarefas/", response_model=TarefaResponse)
 def criar(tarefa: TarefaCreate, db: Session = Depends(get_db)):
-    db_item = Tarefa(**tarefa.dict()) 
+    db_item = Tarefa(**tarefa.dict())  
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
