@@ -1,34 +1,34 @@
 version: '3.8'
 services:
   db:
-    image: docker.io/library/postgres:15-alpine
-    environment:
+    image: docker.io/library/postgres:15-alpine # imagem pronta 
+    environment: # variáveis de ambiente 
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mepa_db
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data # se deletar o container, os dadps ficarão salvos aqui. 
     container_name: app_db
 
   backend:
     build: ./backend
-    image: localhost/app_backend:latest 
+    image: localhost/app_backend:latest # imagem construída manualmente 
     userns_mode: keep-id
-    environment:
+    environment: # string de conexao 
       DATABASE_URL: postgresql://user:password@db:5432/mepa_db
-    volumes:
+    volumes: # espelha a pasta do backend para o container 
       - ./backend:/app
-    depends_on:
+    depends_on: # isso é para que o db seja iniciado antes 
       - db
     container_name: app_backend
 
   proxy:
-    image: docker.io/library/nginx:alpine
+    image: docker.io/library/nginx:alpine # imagem pronta 
     ports:
       - "8080:80"
     volumes:
-      - ./frontend:/usr/share/nginx/html:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro # monta o html 
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # monta a configuraçao inicial do nginx 
     depends_on:
       - backend
     container_name: app_proxy

@@ -1,8 +1,12 @@
+<!--
+o front vai rodar inteiramente no navegador do usuário. Conversa com o "cliente" via HTTP. Envolve o arquivo HTML  e o JavaScript
+-->
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>App Simples</title>
+<title> Gerenciador de Tarefas </title>
 </head>
 <body>
 <div id="status" style="background: yellow; padding: 5px;">Status: Aguardando...</div>
@@ -12,10 +16,16 @@
 <input type="text" id="tituloInput" placeholder="Titulo">
 <button onclick="criarTarefa()">Salvar</button>
 
-<h3>Lista</h3>
+<h3>Lista de Tarefas</h3>
 <ul id="lista"></ul>
 
+<!--
+estrutura html acaba aqui e javascript começa aqui 
+-->
+
+
 <script>
+// rota que define onde a API está
 const API = '/api/tarefas/';
 const statusDiv = document.getElementById('status');
 
@@ -27,24 +37,31 @@ if(erro) statusDiv.style.color = 'white';
 }
 
 async function carregar() {
+
+// fetch faz uma requisiçao HTTP GET para o nginx 
 log("Carregando dados...");
 try {
-const res = await fetch(API);
+const res = await fetch(API); // o await vai pausar a execuçao ate a resposta chegar 
 if (!res.ok) throw new Error("Erro na API: " + res.status);
 
+// aqui o corpo de resposta é convertido para o objeto json javascript
 const dados = await res.json();
+
+// limpa a lista atual da tela 
 const lista = document.getElementById('lista');
 lista.innerHTML = '';
 
+// loop que cria elementos html para cada item do banco de dados 
 dados.forEach(item => {
 const li = document.createElement('li');
-// html cru
+
+// injeta o html com os dados do item criado 
 li.innerHTML = `
 [${item.id}] <b>${item.titulo}</b> - ${item.concluida ? 'FEITO' : 'PENDENTE'}
-<button onclick="deletar(${item.id})">X</button>
-<button onclick="concluir(${item.id}, '${item.titulo}')">V</button>
+<button onclick="deletar(${item.id})">deletar</button>
+<button onclick="concluir(${item.id}, '${item.titulo}')">OK</button>
 `;
-lista.appendChild(li);
+lista.appendChild(li); // adiciona na nossa tela o item  
 });
 log("Dados carregados com sucesso.");
 } catch (err) {
@@ -55,10 +72,12 @@ log("TRAVOU: " + err.message, true);
 
 async function criarTarefa() {
 const titulo = document.getElementById('tituloInput').value;
+
+// fetch com segundo parametro de config 
 await fetch(API, {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({ titulo: titulo })
+method: 'POST', // muda de http para post 
+headers: {'Content-Type': 'application/json'}, //avisa o backend do envio do json 
+body: JSON.stringify({ titulo: titulo }) // transforma o js em string de texto para que possa viajar na rede 
 });
 document.getElementById('tituloInput').value = '';
 carregar();
@@ -78,7 +97,7 @@ body: JSON.stringify({ titulo: titulo, concluida: true })
 carregar();
 }
 
-// inicia ao abrir
+
 carregar();
 </script>
 </body>
