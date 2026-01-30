@@ -15,7 +15,7 @@ services:
     image: localhost/app_backend:latest # imagem construída manualmente 
     userns_mode: keep-id
     environment: # string de conexao 
-      DATABASE_URL: postgresql://user:password@db:5432/mepa_db
+      DATABASE_URL: postgresql://user:password@db/mepa_db
     volumes: # espelha a pasta do backend para o container 
       - ./backend:/app
     depends_on: # isso é para que o db seja iniciado antes 
